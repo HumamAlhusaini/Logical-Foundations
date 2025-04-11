@@ -778,11 +778,21 @@ Proof. reflexivity. Qed.
     Show that [map] and [rev] commute.  You may need to define an
     auxiliary lemma. *)
 
+Lemma app_map : forall (X Y : Type) (f : X -> Y) (l : list X) (x : X),
+  app (map f l) [f x] = map f (app l [x]).
+Proof.
+  intros X Y f l x.
+  induction l.
+  reflexivity.
+  simpl. rewrite -> IHl. reflexivity.
+
+Qed.
 Theorem map_rev : forall (X Y : Type) (f : X -> Y) (l : list X),
   map f (rev l) = rev (map f l).
 Proof.
   intros X Y f l. induction l. simpl. reflexivity.
-  simpl. rewrite <- IHl.
+  simpl. rewrite <- IHl. rewrite app_map. reflexivity.
+Qed.
   
 (** [] *)
 
@@ -798,14 +808,16 @@ Proof.
       = [1; 2; 3; 5; 6; 7; 10; 11; 12].
 *)
 
-Fixpoint flat_map {X Y: Type} (f: X -> list Y) (l: list X)
-                   : list Y
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Fixpoint flat_map {X Y: Type} (f: X -> list Y) (l: list X) : list Y :=
+match l with
+| h :: t => f h ++ flat_map f t
+| nil => nil
+end.
 
 Example test_flat_map1:
   flat_map (fun n => [n;n;n]) [1;5;4]
   = [1; 1; 1; 5; 5; 5; 4; 4; 4].
- (* FILL IN HERE *) Admitted.
+reflexivity. Qed.
 (** [] *)
 
 (** Lists are not the only inductive type for which [map] makes sense.
@@ -958,8 +970,9 @@ Proof. reflexivity. Qed.
 Theorem fold_length_correct : forall X (l : list X),
   fold_length l = length l.
 Proof.
-(* FILL IN HERE *) Admitted.
-(** [] *)
+  intros X l. induction l. reflexivity.
+  simpl. rewrite <- IHl. reflexivity.
+Qed.
 
 (** **** Exercise: 3 stars, standard (fold_map)
 
