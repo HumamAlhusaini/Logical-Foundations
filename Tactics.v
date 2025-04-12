@@ -77,8 +77,8 @@ Theorem silly_ex : forall p,
   even p = true ->
   odd (S p) = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros p N1 N2 H. apply N2. apply N1. apply H.
+Qed.
 
 (** To use the [apply] tactic, the (conclusion of the) fact
     being applied must match the goal exactly (perhaps after
@@ -112,9 +112,9 @@ Theorem rev_exercise1 : forall (l l' : list nat),
   l = rev l' ->
   l' = rev l.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
-
+intros l w H. rewrite H.
+Search (rev). symmetry. apply rev_involutive.
+Qed.
 (** **** Exercise: 1 star, standard, optional (apply_rewrite)
 
     Briefly explain the difference between the tactics [apply] and
@@ -332,8 +332,9 @@ Example discriminate_ex3 :
     x :: y :: l = [] ->
     x = z.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros X x y z l H H2.
+  discriminate H2.
+Qed.
 
 (** For a more useful example, we can use [discriminate] to make a
     connection between the two different notions of equality ([=] and
@@ -646,8 +647,17 @@ Proof.
 Theorem eqb_true : forall n m,
   n =? m = true -> n = m.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros n. induction n as [| n' IHn'].
+  - (* n = O *)
+    destruct m.
+    + reflexivity.
+    + intros contra. discriminate contra.
+  - (* n = S n' *)
+    destruct m.
+    + intros contra. discriminate contra.
+    + intros H. apply IHn' in H.
+      rewrite -> H. reflexivity.
+Qed.
 
 (** **** Exercise: 2 stars, advanced (eqb_true_informal)
 
