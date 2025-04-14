@@ -144,8 +144,15 @@ Qed.
 Example plus_is_O :
   forall n m : nat, n + m = 0 -> n = 0 /\ m = 0.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros n m H.
+  split.
+  - destruct m in H.
+    + rewrite <- plus_n_O in H. apply H.
+    + rewrite <- plus_n_Sm in H. discriminate H.
+  - destruct n in H.
+    + rewrite -> plus_n_O in H. apply H.
+    + simpl in H. discriminate H.
+Qed.
 
 (** So much for proving conjunctive statements.  To go in the other
     direction -- i.e., to _use_ a conjunctive hypothesis to help prove
@@ -222,8 +229,7 @@ Proof.
 Lemma proj2 : forall P Q : Prop,
   P /\ Q -> Q.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+intros P Q HPQ. destruct HPQ as [_ HQ]. apply HQ. Qed.
 
 (** Finally, we sometimes need to rearrange the order of conjunctions
     and/or the grouping of multi-way conjunctions. We can see this
@@ -248,8 +254,8 @@ Theorem and_assoc : forall P Q R : Prop,
   P /\ (Q /\ R) -> (P /\ Q) /\ R.
 Proof.
   intros P Q R [HP [HQ HR]].
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  split. split. apply HP. apply HQ. apply HR.
+Qed.
 
 (** Finally, the infix notation [/\] is actually just syntactic sugar for
     [and A B].  That is, [and] is a Coq operator that takes two
@@ -281,6 +287,13 @@ Proof.
   - (* Here, [m = 0] *)
     rewrite Hm. rewrite <- mult_n_O.
     reflexivity.
+Qed.
+
+Lemma factor_is_O_injuctive:
+  forall n m : nat, n = 0 /\ m = 0 -> n * m = 0.
+Proof.
+  intros n m [Hn Hm].
+  rewrite Hn. reflexivity.
 Qed.
 
 (** We can see in this example that, when we perform case analysis on a
@@ -320,15 +333,17 @@ Qed.
 Lemma mult_is_O :
   forall n m, n * m = 0 -> n = 0 \/ m = 0.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+intros n m H. destruct n.
+- left. reflexivity. 
+- destruct m. right. reflexivity. discriminate H.
+Qed.
 
 (** **** Exercise: 1 star, standard (or_commut) *)
 Theorem or_commut : forall P Q : Prop,
   P \/ Q  -> Q \/ P.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+intros P Q [HP | HQ]. right. apply HP. left. apply HQ.
+Qed.
 
 (* ================================================================= *)
 (** ** Falsehood and Negation
