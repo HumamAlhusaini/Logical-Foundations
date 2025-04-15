@@ -398,11 +398,11 @@ Proof.
     Hint: while getting accustomed to Coq's definition of [not], you might
     find it helpful to [unfold not] near the beginning of proofs. *)
 
-Theorem not_implies_our_not : forall (P:Prop),
-  ~ P -> (forall (Q:Prop), P -> Q).
+Theorem not_implies_our_not : forall (P:Prop), ~ P -> (forall (Q:Prop), P -> Q).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+ intros P NP Q NQ. destruct NP. apply NQ.
+Qed.
+
 
 (** Inequality is a very common form of negated statement, so there is a
     special notation for it:
@@ -469,15 +469,17 @@ Definition manual_grade_for_double_neg_informal : option (nat*string) := None.
 Theorem contrapositive : forall (P Q : Prop),
   (P -> Q) -> (~Q -> ~P).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros P Q HPQ PQ NQ. unfold not in PQ. apply HPQ in NQ. apply PQ in NQ.
+  apply NQ.
+Qed.
+  (** [] *)
 
 (** **** Exercise: 1 star, standard (not_both_true_and_false) *)
 Theorem not_both_true_and_false : forall P : Prop,
   ~ (P /\ ~P).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+intros P [H1 H2]. unfold not in H2. apply H2 in H1. destruct H1.
+Qed.
 
 (** **** Exercise: 1 star, advanced (not_PNP_informal)
 
@@ -501,17 +503,19 @@ Definition manual_grade_for_not_PNP_informal : option (nat*string) := None.
 Theorem de_morgan_not_or : forall (P Q : Prop),
     ~ (P \/ Q) -> ~P /\ ~Q.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+intros P Q H. unfold not in H. split.
+- intros HP. apply or_intro_l  with (B:=Q) in HP. apply H in HP. destruct HP.
+- intros HQ. apply or_intro_l with (B:=P) in HQ. apply or_commut in HQ.
+apply H in HQ. destruct HQ.
+Qed.
 
 (** **** Exercise: 1 star, standard, optional (not_S_inverse_pred)
-
     Since we are working with natural numbers, we can disprove that
     [S] and [pred] are inverses of each other: *)
+
 Lemma not_S_pred_n : ~(forall n : nat, S (pred n) = n).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+unfold not. unfold Nat.pred. intros H. Admitted.
 
 (** Since inequality involves a negation, it also requires a little
     practice to be able to work with it fluently.  Here is one useful
@@ -607,8 +611,8 @@ Qed.
 
 Theorem nil_is_not_cons : forall X (x : X) (xs : list X), ~ (nil = x :: xs).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+intros X x xs H. discriminate H.
+Qed.
 
 (* ================================================================= *)
 (** ** Logical Equivalence *)
@@ -670,21 +674,32 @@ Qed.
 Theorem iff_refl : forall P : Prop,
   P <-> P.
 Proof.
-  (* FILL IN HERE *) Admitted.
+intros P. split. intros H1. apply H1. intros H2. apply H2.
+Qed.
 
 Theorem iff_trans : forall P Q R : Prop,
   (P <-> Q) -> (Q <-> R) -> (P <-> R).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  split. intros P1. apply H0. apply H. apply P1.
+  intros R1. apply H. apply H0. apply R1.
+Qed.
+
+Lemma and_intro : forall A B : Prop, A -> B -> A /\ B.
+Proof.
+  intros A B HA HB. split.
+  - apply HA.
+  - apply HB.
+Qed.
 
 (** **** Exercise: 3 stars, standard (or_distributes_over_and) *)
 Theorem or_distributes_over_and : forall P Q R : Prop,
   P \/ (Q /\ R) <-> (P \/ Q) /\ (P \/ R).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
-
+  split. intros [HP | [HQ HR]]. split. left. apply HP. left. apply HP.
+  split. right. apply HQ. right. apply HR.
+intros [[HP1 | HQ] [HP2 | HR]]. left. apply HP1. left. apply HP1.
+left. apply HP2. right. apply and_intro. apply HQ. apply HR.
+Qed.
 (* ================================================================= *)
 (** ** Setoids and Logical Equivalence *)
 
@@ -792,8 +807,8 @@ Proof.
 Theorem dist_not_exists : forall (X:Type) (P : X -> Prop),
   (forall x, P x) -> ~ (exists x, ~ P x).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+ intros X P H x. destruct x. unfold not in H0. apply H0 in H. apply H.
+Qed.
 
 (** **** Exercise: 2 stars, standard (dist_exists_or)
 
@@ -803,17 +818,34 @@ Proof.
 Theorem dist_exists_or : forall (X:Type) (P Q : X -> Prop),
   (exists x, P x \/ Q x) <-> (exists x, P x) \/ (exists x, Q x).
 Proof.
-   (* FILL IN HERE *) Admitted.
-(** [] *)
+ intros X P Q.
+  split.
+  - intros [x [HP | HQ]]. left. exists x. apply HP. right. exists x. apply HQ.
+  - intros [[x HP] | [x HQ]]. exists x. left. apply HP. exists x. right. apply HQ.
+Qed.
 
 (** **** Exercise: 3 stars, standard, optional (leb_plus_exists) *)
 Theorem leb_plus_exists : forall n m, n <=? m = true -> exists x, m = n+x.
 Proof.
-(* FILL IN HERE *) Admitted.
+  induction n.
+  - intros. exists m. reflexivity.
+  - destruct m.
+    + simpl. discriminate.
+    + simpl. intros H. apply IHn in H. destruct H as [v H].
+      rewrite H. exists v. reflexivity.
+Qed.
 
 Theorem plus_exists_leb : forall n m, (exists x, m = n+x) -> n <=? m = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+intros.
+  destruct H.
+  generalize dependent m.
+  induction n. 
+  - reflexivity.
+  - intros. destruct m. simpl. discriminate H.
+  rewrite add_comm in H. rewrite <- plus_n_Sm in H. injection H as H.
+  rewrite add_comm in H. apply IHn in H. apply H.
+Qed.
 
 (** [] *)
 
@@ -900,17 +932,31 @@ Theorem In_map_iff :
          exists x, f x = y /\ In x l.
 Proof.
   intros A B f l y. split.
-  - induction l as [|x l' IHl'].
-    (* FILL IN HERE *) Admitted.
-(** [] *)
+  - induction l as [| x' l'].
+    + simpl. intros [].
+    + simpl. intros [H | H].
+      * exists x'. split. apply H. left. reflexivity.
+      * apply IHl' in H. destruct H as [x [H1 H2]].
+        exists x. split. apply H1. right. apply H2.
+  - intros [x [H1 H2]]. rewrite <- H1. apply In_map. apply H2.
+Qed.
 
 (** **** Exercise: 2 stars, standard (In_app_iff) *)
 Theorem In_app_iff : forall A l l' (a:A),
   In a (l++l') <-> In a l \/ In a l'.
 Proof.
   intros A l. induction l as [|a' l' IH].
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  + split. right. apply H. intros [H | H]. destruct H. apply H.
+  + split.
+    - intros [H | H].
+      * left. left. apply H.
+      * simpl. apply or_assoc. right. apply IH. apply H.
+    - intros [H | H].
+      * destruct H as [H' | H'].
+        left. apply H'.
+        right. apply IH. left. apply H'.
+      * right. apply IH. right. apply H.
+Qed.
 
 (** **** Exercise: 3 stars, standard, especially useful (All)
 
